@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 function Registration() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false); // ✅ for submit state
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -25,26 +26,29 @@ function Registration() {
       return;
     }
 
+    setLoading(true); // show loading
+
     try {
       await addDoc(collection(db, "users"), {
         name,
         email,
         phone,
-        timestamp: new Date()
+        timestamp: serverTimestamp() // ensures ordering works
       });
-      // Show success message
-      setSuccess(true);
 
-      // Clear form
+      // Clear form immediately
       setName('');
       setEmail('');
       setPhone('');
+      setSuccess(true);
 
-      // Hide success after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
+      // Hide success after 2 seconds
+      setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
-      console.error("Error adding document: ", err);
+      console.error("Error adding user:", err);
       alert("Error submitting form. Check console.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,6 +71,7 @@ function Registration() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
+            required
           />
         </div>
 
@@ -78,6 +83,7 @@ function Registration() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
+            required
           />
         </div>
 
@@ -89,11 +95,12 @@ function Registration() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Enter 10-digit phone number"
+            required
           />
         </div>
 
-        <button type="submit" className="btn btn-success">
-          Submit
+        <button type="submit" className="btn btn-success" disabled={loading}>
+          {loading ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
