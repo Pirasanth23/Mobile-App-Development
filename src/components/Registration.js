@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 
 function Registration() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false); // ✅ for submit state
   const [success, setSuccess] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +28,12 @@ function Registration() {
       return;
     }
 
-    setLoading(true); // show loading
-
     try {
       await addDoc(collection(db, "users"), {
         name,
         email,
         phone,
-        timestamp: serverTimestamp() // ensures ordering works
+        timestamp: new Date()
       });
 
       // Clear form immediately
@@ -42,13 +42,15 @@ function Registration() {
       setPhone('');
       setSuccess(true);
 
-      // Hide success after 2 seconds
-      setTimeout(() => setSuccess(false), 2000);
+      // Optional: navigate to Users page
+      setTimeout(() => {
+        setSuccess(false);
+        navigate('/users'); // go to users page after 2s
+      }, 2000);
+
     } catch (err) {
-      console.error("Error adding user:", err);
+      console.error("Error adding document: ", err);
       alert("Error submitting form. Check console.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -65,43 +67,17 @@ function Registration() {
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">Name</label>
-          <input
-            type="text"
-            className="form-control"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            required
-          />
+          <input type="text" className="form-control" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Enter your name" />
         </div>
-
         <div className="mb-3">
           <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
+          <input type="email" className="form-control" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Enter your email" />
         </div>
-
         <div className="mb-3">
           <label className="form-label">Phone</label>
-          <input
-            type="text"
-            className="form-control"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Enter 10-digit phone number"
-            required
-          />
+          <input type="text" className="form-control" value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder="Enter 10-digit phone number" />
         </div>
-
-        <button type="submit" className="btn btn-success" disabled={loading}>
-          {loading ? "Submitting..." : "Submit"}
-        </button>
+        <button type="submit" className="btn btn-success">Submit</button>
       </form>
     </div>
   );
