@@ -1,84 +1,76 @@
-import React, { useState } from 'react';
-import { db } from '../firebase';
-import { collection, addDoc } from "firebase/firestore";
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 function Registration() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if(name.trim().length < 3){
-      alert("Name must be at least 3 characters");
-      return;
-    }
-    if(!email.includes("@")){
-      alert("Invalid email");
-      return;
-    }
-    if(phone.length !== 10 || isNaN(phone)){
-      alert("Phone must be 10 digits");
-      return;
-    }
-
     try {
-      await addDoc(collection(db, "users"), {
+      const docRef = await addDoc(collection(db, "users"), {
         name,
         email,
         phone,
-        timestamp: new Date()
+        timestamp: serverTimestamp(),
       });
 
-      // Clear form immediately
-      setName('');
-      setEmail('');
-      setPhone('');
-      setSuccess(true);
+      // 🔹 Add console.log here to debug
+      console.log("User added with ID:", docRef.id);
 
-      // Optional: navigate to Users page
-      setTimeout(() => {
-        setSuccess(false);
-        navigate('/users'); // go to users page after 2s
-      }, 2000);
+      setSuccess("User registered successfully!");
+      setName("");
+      setEmail("");
+      setPhone("");
 
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Error adding document: ", err);
-      alert("Error submitting form. Check console.");
+      console.error("Error adding document:", err); // 🔹 Add this too
+      setSuccess("Error registering user. Try again!");
     }
   };
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Register</h2>
-
-      {success && (
-        <div className="alert alert-success" role="alert">
-          Registration successful!
-        </div>
-      )}
+      <h2 className="mb-4 text-center">User Registration</h2>
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Name</label>
-          <input type="text" className="form-control" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Enter your name" />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input type="email" className="form-control" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Enter your email" />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Phone</label>
-          <input type="text" className="form-control" value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder="Enter 10-digit phone number" />
-        </div>
-        <button type="submit" className="btn btn-success">Submit</button>
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          className="form-control mb-2"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+        />
+        <button type="submit" className="btn btn-success w-100">
+          Register
+        </button>
       </form>
+
+      {success && (
+        <div className="alert alert-success text-center mt-3">{success}</div>
+      )}
     </div>
   );
 }

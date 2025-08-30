@@ -12,7 +12,6 @@ function UserList() {
   const [deletingUser, setDeletingUser] = useState(null);
 
   useEffect(() => {
-    // Listen to real-time updates
     const q = query(collection(db, "users"), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const userData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -75,43 +74,81 @@ function UserList() {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <table className="table table-bordered table-hover table-striped shadow-sm">
-        <thead className="table-dark">
-          <tr>
-            <th onClick={() => sortBy("name")} style={{cursor: 'pointer'}}>Name</th>
-            <th onClick={() => sortBy("email")} style={{cursor: 'pointer'}}>Email</th>
-            <th onClick={() => sortBy("phone")} style={{cursor: 'pointer'}}>Phone</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredUsers.map(user => (
-            <tr key={user.id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.phone}</td>
-              <td>
-                <button
-                  className="btn btn-primary btn-sm me-2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editModal"
-                  onClick={() => handleEdit(user)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  data-bs-toggle="modal"
-                  data-bs-target="#deleteModal"
-                  onClick={() => setDeletingUser(user)}
-                >
-                  Delete
-                </button>
-              </td>
+      {/* Table for Desktop */}
+      <div className="d-none d-md-block">
+        <table className="table table-bordered table-hover table-striped shadow-sm">
+          <thead className="table-dark">
+            <tr>
+              <th onClick={() => sortBy("name")} style={{ cursor: 'pointer' }}>Name</th>
+              <th onClick={() => sortBy("email")} style={{ cursor: 'pointer' }}>Email</th>
+              <th onClick={() => sortBy("phone")} style={{ cursor: 'pointer' }}>Phone</th>
+              <th>Actions</th>
             </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map(user => (
+              <tr key={user.id}>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.phone}</td>
+                <td>
+                  <button
+                    className="btn btn-primary btn-sm me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal"
+                    onClick={() => handleEdit(user)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal"
+                    onClick={() => setDeletingUser(user)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Card View for Mobile */}
+      <div className="d-md-none">
+        <div className="row">
+          {filteredUsers.map(user => (
+            <div className="col-12 mb-3" key={user.id}>
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title text-primary">{user.name}</h5>
+                  <p className="card-text mb-1"><strong>Email:</strong> {user.email}</p>
+                  <p className="card-text mb-1"><strong>Phone:</strong> {user.phone}</p>
+                  <div className="d-flex justify-content-end">
+                    <button
+                      className="btn btn-sm btn-success me-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editModal"
+                      onClick={() => handleEdit(user)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteModal"
+                      onClick={() => setDeletingUser(user)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
 
       {/* Delete Modal */}
       <div className="modal fade" id="deleteModal" tabIndex="-1">
@@ -142,9 +179,9 @@ function UserList() {
             </div>
             <form onSubmit={handleUpdate}>
               <div className="modal-body">
-                <input type="text" className="form-control mb-2" placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} required/>
-                <input type="email" className="form-control mb-2" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} required/>
-                <input type="text" className="form-control mb-2" placeholder="Phone" value={phone} onChange={(e)=>setPhone(e.target.value)} required/>
+                <input type="text" className="form-control mb-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                <input type="email" className="form-control mb-2" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <input type="text" className="form-control mb-2" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
